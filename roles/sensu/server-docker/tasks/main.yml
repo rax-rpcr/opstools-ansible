@@ -1,0 +1,106 @@
+---
+- set_fact: sensu_docker=1
+
+- name: Ensure data directory exists
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0770
+    owner: '{{ sensu_user_id }}'
+    group: '{{ sensu_group_id }}'
+  with_items:
+    - '{{ persistent_sensu_config_path }}'
+    - '{{ persistent_sensu_config_path }}/conf.d'
+    - '{{ persistent_sensu_config_path }}/log'
+
+- name: Configure RabbitMQ on Sensu
+  template:
+    src: templates/{{ item }}.json.j2
+    dest: '{{ persistent_sensu_config_path }}/conf.d/{{ item }}.json'
+    owner: '{{ sensu_user_id }}'
+    group: '{{ sensu_group_id }}'
+  with_items:
+    - rabbitmq
+  notify: "restart sensu docker"
+
+# Add the following configuration
+# api.json -- it configures the sensu-api (server and client)
+# redis.json -- it configures the use of redis for sensu as storage
+- name: Configure Sensu
+  template:
+    src: 'templates/{{ item }}.json.j2'
+    dest: '{{ persistent_sensu_config_path }}/conf.d/{{ item }}.json'
+    owner: '{{ sensu_user_id }}'
+    group: '{{ sensu_group_id }}'
+  with_items:
+    - api
+    - redis
+  notify: "restart sensu docker"
+
+# sensu-checks.json configures oschecks to be executed on the clients.
+# It's provided by the sensu-checks.json.j2 template which can be customized
+# through the sensu_overcloud_checks and sensu_remote_checks variables.
+- name: Configure Sensu checks
+  template:
+    src: 'templates/{{ item }}.json.j2'
+    dest: '{{ persistent_sensu_config_path }}/conf.d/{{ item }}.json'
+    owner: '{{ sensu_user_id }}'
+    group: '{{ sensu_group_id }}'
+  with_items:
+    - sensu-checks
+    - sensu-haproxy-check
+  when: sensu_manage_checks
+  notify: "restart sensu docker"
+
+- name: Create appropriate firewall rules
+  include_role:
+    name: firewall/commit
+  vars:
+    firewall_rules: sensu_hosts
+
+- name: Check available Docker images
+  command: /usr/bin/docker images --format '{{ "{{" }}.Repository{{ "}}" }}'
+  register: docker_images
+
+- name: Copy Docker image files
+  copy:
+    src: 'files/{{ item.name }}'
+    dest: /tmp/sensu_docker_image/
+    mode: '{{ item.mode }}'
+    owner: root
+    group: root
+  with_items:
+    - { name: 'Dockerfile', mode: '0660' }
+    - { name: 'sensu.repo', mode: '0444' }
+  when: '"sensu-server" not in docker_images.stdout'
+
+- name: Build Sensu Server Docker image
+  docker_image:
+    name: sensu-server
+    path: /tmp/sensu_docker_image/
+    timeout: 180
+    pull: False
+  when: '"sensu-server" not in docker_images.stdout'
+
+- name: Create Sensu Server Docker container
+  docker_container:
+    name: sensu-server
+    image: sensu-server
+    volumes:
+      - '{{ persistent_sensu_config_path }}/conf.d:{{ sensu_config_path }}'
+      - '{{ persistent_sensu_config_path }}/log:{{ sensu_log_path }}'
+    command: 'start server'
+    restart_policy: unless-stopped
+    state: started
+
+- name: Create Sensu API Docker container
+  docker_container:
+    name: sensu-api
+    image: sensu-server
+    volumes:
+      - '{{ persistent_sensu_config_path }}/conf.d:{{ sensu_config_path }}'
+      - '{{ persistent_sensu_config_path }}/log:{{ sensu_log_path }}'
+    published_ports: '{{ sensu_api_port }}:4567'
+    command: 'start api'
+    restart_policy: unless-stopped
+    state: started

@@ -1,0 +1,12 @@
+---
+- name: restart redis docker
+  docker_container:
+    name: sensu-redis
+    image: '{{ redis_docker_image }}'
+    volumes: '{{ persistent_redis_data_path }}:/var/lib/redis/data'
+    published_ports: '{{ redis_listen_port }}:6379'
+    env:
+      REDIS_PASSWORD: '{{ redis_password }}'
+    restart_policy: unless-stopped
+    state: started
+    restart: yes

@@ -1,0 +1,24 @@
+---
+# Owner of Sensu configuration files.
+sensu_user_id: 0
+
+# Group of Sensu configuration files.
+sensu_group_id: 0
+
+# Port of the RabbitMQ server.
+sensu_rabbitmq_port: '{{ rabbitmq_port }}'
+
+# Authenticate to RabbitMQ server as this user.
+sensu_rabbitmq_user: '{{ rabbitmq_default_user }}'
+
+# Authenticate to RabbitMQ using this password.
+sensu_rabbitmq_password: '{{ rabbitmq_password }}'
+
+# IP to use to connect to RabbitMQ.
+sensu_rabbitmq_server: '{{ docker_host_ip }}'
+
+# IP to use to connect to Redis.
+sensu_redis_server: '{{ docker_host_ip }}'
+
+# Port to use to connect to Redis.
+sensu_redis_port: '{{ redis_listen_port }}'

@@ -1,6 +1,6 @@
 ---
 # Port on which RabbitMQ should listen.
-rabbitmq_port: 5672
+rabbitmq_port: "{{ '5672' if sensu_docker is undefined else '5673' }}"
 
 # Address to which clients should connect to the RabbitMQ service.
 rabbitmq_server: localhost

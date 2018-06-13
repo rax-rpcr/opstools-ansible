@@ -71,7 +71,7 @@ sensu_api_password: sensu
 sensu_redis_server: 127.0.0.1
 
 # Port on which the Redis server listens.
-sensu_redis_port: '{{ redis_listen_port }}'
+redis_listen_port: "{{ '6379' if sensu_docker is undefined else '16379' }}"
 
 # Password for authenticating to Redis.
 sensu_redis_password: "{{ redis_password }}"
@@ -118,44 +118,11 @@ oschecks_package_name: osops-tools-monitoring-oschecks
 #         - overcloud-ceilometer-aodh-api
 #
 sensu_overcloud_checks:
-  - name: aodh-evaluator
-    subscribers:
-      - overcloud-ceilometer-aodh-evaluator
-  - name: aodh-listener
-    subscribers:
-      - overcloud-ceilometer-aodh-listener
-  - name: aodh-notifier
-    subscribers:
-      - overcloud-ceilometer-aodh-notifier
-  - name: ceilometer-central
-    subscribers:
-      - overcloud-ceilometer-agent-central
-  - name: ceilometer-collector
-  - name: ceilometer-compute
-  - name: ceilometer-compute
-    subscribers:
-      - overcloud-ceilometer-agent-compute
-  - name: ceilometer-notification
-    subscribers:
-      - overcloud-ceilometer-agent-notification
-  - name: ceilometer-polling
-  - name: ceph-df
-  - name: ceph-health
-  - name: cinder-api
   - name: cinder-scheduler
-  - name: cinder-volume
-  - name: glance-api
-  - name: glance-registry
-  - name: haproxy
-    service: haproxy
-  - name: heat-api
-  - name: heat-api-cfn
-  - name: heat-api-cloudwatch
-  - name: heat-engine
-  - name: memcached
-    service: memcached
   - name: neutron-api
     service: neutron-server
+  - name: neutron-dhcp-agent
+    service: neutron-dhcp-agent
   - name: neutron-l3-agent
     service: neutron-l3-agent
   - name: neutron-metadata-agent
@@ -164,28 +131,28 @@ sensu_overcloud_checks:
       - overcloud-neutron-metadata
   - name: neutron-ovs-agent
     service: neutron-openvswitch-agent
-  - name: nova-api
-  - name: nova-compute
-  - name: nova-conductor
-  - name: nova-consoleauth
   - name: nova-libvirt
     service: libvirtd
-  - name: nova-novncproxy
-    subscribers:
-      - overcloud-nova-vncproxy
-  - name: nova-scheduler
   - name: pacemaker
     service: pacemaker
-  - name: swift-proxy
 
 # A list of sensu checks for service managed as resources in pacemaker
 sensu_overcloud_checks_pcs:
-  - name: rabbitmq-clone
+  - name: rabbitmq-bundle
     subscribers:
       - overcloud-rabbitmq
-  - name: galera
+  - name: galera-bundle
     subscribers:
       - overcloud-galera
+  - name: redis-bundle
+    subscribers:
+      - overcloud-redis
+  - name: haproxy-bundle
+    subscribers:
+      - overcloud-haproxy
+  - name: openstack-cinder-volume
+    subscribers:
+      - overcloud-cinder-volume
 
 # A list of sensu checks that will run on an opstools server
 sensu_remote_checks: []

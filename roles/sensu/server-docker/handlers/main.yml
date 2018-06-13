@@ -1,0 +1,27 @@
+---
+- name: Restart Sensu server container
+  docker_container:
+    name: sensu-server
+    image: sensu-server
+    volumes:
+      - '{{ persistent_sensu_config_path }}/conf.d:{{ sensu_config_path }}'
+      - '{{ persistent_sensu_config_path }}/log:{{ sensu_log_path }}'
+    command: 'start server'
+    restart_policy: unless-stopped
+    state: started
+    restart: yes
+  listen: "restart sensu docker"
+
+- name: Restart Sensu API container
+  docker_container:
+    name: sensu-api
+    image: sensu-server
+    volumes:
+      - '{{ persistent_sensu_config_path }}/conf.d:{{ sensu_config_path }}'
+      - '{{ persistent_sensu_config_path }}/log:{{ sensu_log_path }}'
+    published_ports: '{{ sensu_api_port }}:4567'
+    command: 'start api'
+    restart_policy: unless-stopped
+    state: started
+    restart: yes
+  listen: "restart sensu docker"

@@ -1,0 +1,28 @@
+---
+- set_fact: sensu_docker=1
+
+- name: Ensure data directory exists
+  file:
+    path: '{{ persistent_redis_data_path }}'
+    state: directory
+    mode: 0770
+    owner: '{{ redis_user_id }}'
+    group: '{{ redis_group_id }}'
+
+- name: Create appropriate firewall rules
+  include_role:
+    name: firewall/commit
+  vars:
+    firewall_rules: redis_hosts
+
+- name: Create Redis docker container
+  docker_container:
+    name: sensu-redis
+    image: '{{ redis_docker_image }}'
+    volumes: '{{ persistent_redis_data_path }}:/var/lib/redis/data'
+    published_ports: '{{ redis_listen_port }}:6379'
+    env:
+      REDIS_PASSWORD: '{{ redis_password }}'
+    restart_policy: unless-stopped
+    state: started
+  notify: restart redis docker

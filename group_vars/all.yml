@@ -13,3 +13,15 @@ localhost_ip: 127.0.0.1
 # either gnocchi or graphite. Will influence the data storage
 # for performance metrics on the monitoring node.
 data_storage: gnocchi
+
+########################################
+# Docker related
+# (Use these if deploying sensu/redis/rabbitmq as containers)
+########################################
+persistent_redis_data_path: /data/redis
+persistent_rabbitmq_data_path: /data/rabbitmq
+persistent_sensu_config_path: /data/sensu
+redis_docker_image: centos/redis-32-centos7:3.2
+rabbitmq_docker_image: rabbitmq:3-management
+# An IP on the docker host that Sensu will use to connect to Redis & RabbitMQ
+docker_host_ip: 192.168.248.1

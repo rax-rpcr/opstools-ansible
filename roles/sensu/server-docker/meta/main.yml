@@ -1,0 +1,6 @@
+---
+dependencies:
+  - firewall
+  - firewall/gather
+  - redis/server-docker
+  - rabbitmq/server-docker

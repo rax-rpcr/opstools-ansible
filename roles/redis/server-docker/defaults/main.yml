@@ -1,0 +1,6 @@
+---
+# UID of the redis user inside the container
+redis_user_id: 1001
+
+# GID of the redis group inside the container
+redis_group_id: 998

@@ -1,0 +1,12 @@
+---
+# UID of the redis user inside the container
+rabbitmq_user_id: 999
+
+# GID of the redis group inside the container
+rabbitmq_group_id: 999
+
+# Password for the default RabbitMQ username
+rabbitmq_password: 4vZRFJgTGhnb3FtILAEvm0kmzhQF20jVl8C
+
+# Port that Docker should map to for the RabbitMQ Management Interface
+docker_rabbitmq_management_port: 15673

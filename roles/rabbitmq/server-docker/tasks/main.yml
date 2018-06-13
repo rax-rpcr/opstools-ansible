@@ -1,0 +1,33 @@
+---
+- set_fact: sensu_docker=1
+
+- name: ensure data directory exists
+  file:
+    path: '{{ persistent_rabbitmq_data_path }}'
+    state: directory
+    mode: 0770
+    owner: '{{ rabbitmq_user_id }}'
+    group: '{{ rabbitmq_group_id }}'
+
+- name: Create appropriate firewall rules
+  include_role:
+    name: firewall/commit
+  vars:
+    firewall_rules: rabbit_hosts
+
+- name: Create RabbitMQ docker container
+  docker_container:
+    name: sensu-rabbitmq
+    hostname: '{{ ansible_hostname }}-sensu-rabbitmq'
+    image: '{{ rabbitmq_docker_image }}'
+    volumes: '{{ persistent_rabbitmq_data_path }}:/var/lib/rabbitmq'
+    published_ports:
+      - '{{ rabbitmq_port }}:5672'
+      - '{{ docker_rabbitmq_management_port }}:15672'
+    env:
+      RABBITMQ_DEFAULT_VHOST: '{{ sensu_rabbitmq_vhost }}'
+      RABBITMQ_DEFAULT_USER: '{{ rabbitmq_default_user }}'
+      RABBITMQ_DEFAULT_PASS: '{{ rabbitmq_password }}'
+    restart_policy: unless-stopped
+    state: started
+  notify: "restart rabbitmq docker"
