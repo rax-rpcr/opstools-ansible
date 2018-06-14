@@ -4,16 +4,17 @@
 ---
 - name: Install prerequisites on all hosts and gather facts
   hosts: undercloud
+  become: true
   tags:
     - prereqs
   roles:
     - firewall/gather
     - prereqs
-    - repos
     - chrony
 
 - name: Install Redis
   hosts: undercloud
+  become: true
   tags:
     - availability
     - redis
@@ -22,6 +23,7 @@
 
 - name: Install RabbitMQ
   hosts: undercloud
+  become: true
   tags:
     - availability
     - rabbitmq
@@ -30,6 +32,7 @@
 
 - name: Install Sensu
   hosts: undercloud
+  become: true
   tags:
     - availability
     - sensu

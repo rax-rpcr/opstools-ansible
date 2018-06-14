@@ -12,5 +12,6 @@
     name: centos-release
     state: latest
     disablerepo: centos-qemu-ev
+  when: manage_repos|default(false) and ansible_distribution == 'CentOS'
   tags:
     - skip_ansible_lint
