@@ -3,13 +3,17 @@
   copy:
     src: sensu.repo
     dest: '{{ yum_repos_d }}/sensu.repo'
-  when: manage_repos|default(false)
+  when:
+    - manage_repos|default(false)
+    - sensu_docker is undefined
 
 - name: Ensure repoquery command is available
   package:
     name: yum-utils
     state: present
-  when: manage_packages|default(false)
+  when:
+    - manage_packages|default(false)
+    - sensu_docker is undefined
 
 - name: Check for obsolete sensu package
   command: >
@@ -18,20 +22,26 @@
   changed_when: false
   failed_when: false
   register: sensu_version
-  when: manage_packages|default(false)
+  when:
+    - manage_packages|default(false)
+    - sensu_docker is undefined
 
 - name: Remove obsolete sensu package
   package:
     name: '{{ item }}'
     state: absent
   with_items: '{{ sensu_version.stdout_lines }}'
-  when: manage_packages|default(false)
+  when:
+    - manage_packages|default(false)
+    - sensu_docker is undefined
 
 - name: Install sensu
   package:
     name: '{{ sensu_package_name }}'
     state: installed
-  when: manage_packages|default(false)
+  when:
+    - manage_packages|default(false)
+    - sensu_docker is undefined
 
 - name: Configure rabbitmq on sensu
   template:
@@ -41,6 +51,7 @@
     group: '{{ sensu_group }}'
   with_items:
     - rabbitmq
+  when: sensu_docker is undefined
 
 - block:
     - name: Ensure SSL directory for Sensu exists
