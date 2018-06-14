@@ -5,6 +5,9 @@ rabbitmq_user_id: 999
 # GID of the redis group inside the container
 rabbitmq_group_id: 999
 
+# Username to set on the RabbitMQ container
+rabbitmq_default_user: '{{ sensu_rabbitmq_user }}'
+
 # Password for the default RabbitMQ username
 rabbitmq_password: 4vZRFJgTGhnb3FtILAEvm0kmzhQF20jVl8C
 
